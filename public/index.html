@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal Builder</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <a href="/" style="text-decoration: none; color: white;">
+                    <h1><i class="fas fa-file-contract"></i> Proposal Builder</h1>
+                    <p class="header-subtitle">Create and manage proposal templates</p>
+                </a>
+            </div>
+            <div class="header-actions">
+                <!-- <button class="btn btn-icon" onclick="showScreenModal()" title="Add Screen">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Screen</span>
+                </button> -->
+                <button class="btn btn-primary" onclick="generatePDF()" title="Generate PDF">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Generate PDF</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <!-- Main Navigation Menu -->
+                <nav class="main-nav">
+                    <button class="nav-item" id="nav-default-screens" onclick="goToDefaultScreens()">
+                        <i class="fas fa-desktop"></i>
+                        <span>Manage Screens Library</span>
+                    </button>
+                    <button class="nav-item" id="nav-templates" onclick="goToTemplates()">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Manage Templates</span>
+                    </button>
+                    <button class="nav-item" id="nav-clients" onclick="goToClients()">
+                        <i class="fas fa-users"></i>
+                        <span>Manage Clients</span>
+                    </button>
+                </nav>
+
+
+                <!-- Context Header -->
+                <div class="context-header" id="context-header">
+                    <div class="context-info"  style="width: 100%;">
+                        <h2 id="context-title">Screens Library</h2>
+                        <p class="context-subtitle" id="context-subtitle">Manage your proposal screens library</p>
+
+                        <button class="btn btn-icon-small nav-item active" id="expand-layout-btn" onclick="expand()" style="width: 100%; margin-top: 15px;" title="Expand for organization and screen reordering">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                            <span>Expand</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-icon-small" id="back-to-clients-btn" onclick="goToClients()" style="display: none;" title="Back to Clients">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
+
+                <!-- Screens List -->
+                <div id="screens-content">
+                    <div class="section-header">
+                        <span class="screen-count" id="screen-count">0 screens</span>
+                        <button class="btn btn-icon-small" onclick="showScreenModal()" title="Add Screen">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <ul id="screens-list" class="screens-list"></ul>
+                    <div class="empty-screens" id="empty-screens" style="display: none;">
+                        <i class="fas fa-inbox"></i>
+                        <p>No screens yet</p>
+                        <button class="btn btn-link" onclick="showScreenModal()">Add your first screen</button>
+                    </div>
+                </div>
+
+                <!-- Templates List -->
+                <div id="templates-content" style="display: none;">
+                    <div class="section-header">
+                        <h2 onclick="showTemplateModal()" style="cursor: pointer;">Add new template</h2>
+                        <button class="btn btn-icon-small" onclick="showTemplateModal()" title="Add Template">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <ul id="templates-list" class="clients-list"></ul>
+                    <div class="empty-clients" id="empty-templates" style="display: none;">
+                        <i class="fas fa-file-alt"></i>
+                        <p>No templates yet</p>
+                        <button class="btn btn-link" onclick="showTemplateModal()">Create your first template</button>
+                    </div>
+                </div>
+
+                <!-- Clients List -->
+                <div id="clients-content" style="display: none;">
+                    <div class="section-header">
+                        <h2 onclick="showClientModal()" style="cursor: pointer;">Add new client</h2>
+                        <button class="btn btn-icon-small" onclick="showClientModal()" title="Add Client">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <ul id="clients-list" class="clients-list"></ul>
+                    <div class="empty-clients" id="empty-clients" style="display: none;">
+                        <i class="fas fa-users"></i>
+                        <p>No clients yet</p>
+                        <button class="btn btn-link" onclick="showClientModal()">Create your first client</button>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="workspace">
+                <div class="toolbar">
+                    <div class="toolbar-info">
+                        <div class="toolbar-context">
+                            <span id="current-context" class="current-context">Screens Library</span>
+                            <span id="current-screen-name" class="current-screen-name"></span>
+                        </div>
+                        <span id="edit-mode-indicator" class="edit-mode-indicator">
+                            <i class="fas fa-mouse-pointer"></i> Click on an element to edit
+                        </span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="btn btn-icon-small" id="save-changes-btn" onclick="saveEntireScreen()" style="display: none;">
+                            <i class="fas fa-save"></i>
+                            <span>Save Changes</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-wrapper">
+                    <video class="preview-background-video" autoplay loop muted playsinline>
+                        <source src="gradient-transparent-geometry-background-2025-08-29-10-10-55-utc.mp4" type="video/mp4">
+                    </video>
+                    <div id="preview-container" class="preview-container">
+                        <div class="empty-state">
+                            <i class="fas fa-mouse-pointer"></i>
+                            <p>Select a screen to view and edit</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Edit Sidebar -->
+            <aside id="edit-sidebar" class="edit-sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="fas fa-edit"></i> Edit Element</h3>
+                    <button class="close-sidebar" onclick="closeEditSidebar()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="edit-sidebar-content" class="sidebar-content">
+                    <!-- Content will be dynamically added -->
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Global Loader -->
+    <div id="global-loader" class="global-loader" style="display: none;">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <p class="loader-text">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Universal Screen Management Modal -->
+    <div id="screen-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="screen-modal-title"><i class="fas fa-desktop"></i> Add Screen</h2>
+                <span class="close" onclick="closeScreenModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" id="screen-name-group">
+                    <label>Screen Name <span id="screen-name-required">*</span></label>
+                    <input type="text" id="screen-modal-name" placeholder="Enter screen name" required>
+                </div>
+                <div class="form-tabs">
+                    <button class="tab-btn active" id="default-screens-tab-btn" onclick="switchImportTab('default')">
+                        <i class="fas fa-clone"></i> Select from Library
+                    </button>
+                    <button class="tab-btn" onclick="switchImportTab('file')">
+                        <i class="fas fa-file"></i> Upload File
+                    </button>
+                    <button class="tab-btn" onclick="switchImportTab('text')">
+                        <i class="fas fa-code"></i> Paste HTML
+                    </button>
+                </div>
+                <div id="import-default-tab" class="tab-content active">
+                    <div class="form-group">
+                        <label>Select Screens From Library</label>
+                        <div id="default-screens-list" class="default-screens-list">
+                            <div class="loading-state" id="default-screens-loading">
+                                <i class="fas fa-spinner fa-spin"></i> Loading screens...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="import-file-tab" class="tab-content">
+                    <div class="form-group">
+                        <label>Upload HTML File</label>
+                        <div class="file-upload-area" id="file-upload-area" onclick="document.getElementById('screen-modal-file').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload or drag and drop</p>
+                            <input type="file" id="screen-modal-file" accept=".html" onchange="handleFileSelect(event)" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+                <div id="import-text-tab" class="tab-content">
+                    <div class="form-group">
+                        <label>Paste HTML Code</label>
+                        <textarea id="screen-modal-html" rows="15" placeholder="Paste your HTML code here..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeScreenModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveScreenFromModal()">
+                        <i class="fas fa-save"></i> Save Screen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Management Modal -->
+    <div id="client-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="client-modal-title"><i class="fas fa-user-plus"></i> Create Client</h2>
+                <span class="close" onclick="closeClientModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Client Name *</label>
+                    <input type="text" id="client-name" placeholder="Enter client name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="client-email" placeholder="client@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="client-phone" placeholder="+1 (555) 000-0000">
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="client-notes" rows="3" placeholder="Additional notes..."></textarea>
+                </div>
+                
+                <div class="import-default-section">
+                    <div class="import-default-card">
+                        <i class="fas fa-file-alt"></i>
+                        <div class="import-default-info">
+                            <h3>Use Template</h3>
+                            <p>Select a template to copy all its screens to this client</p>
+                        </div>
+                        <select id="client-template-select" class="form-control" style="margin-bottom: 10px;">
+                            <option value="">Select a template...</option>
+                        </select>
+                    </div>
+                    <div class="import-default-card" style="margin-top: 15px; display: none !important;">
+                        <i class="fas fa-copy"></i>
+                        <div class="import-default-info">
+                            <h3>Import Screens from Library</h3>
+                            <p>Copy all screens to this client</p>
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="importDefaultScreens()" id="import-default-btn">
+                            <i class="fas fa-download"></i> Import Screens
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeClientModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveClient()">
+                        <i class="fas fa-save"></i> Create Client
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Management Modal -->
+    <div id="template-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="template-modal-title"><i class="fas fa-file-alt"></i> Create Template</h2>
+                <span class="close" onclick="closeTemplateModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Template Name *</label>
+                    <input type="text" id="template-name" placeholder="e.g., SEO Proposal, PPC Proposal" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="template-description" rows="3" placeholder="Template description..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeTemplateModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveTemplate()">
+                        <i class="fas fa-save"></i> Create Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Template Modal -->
+    <div id="edit-template-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-alt"></i> Edit Template</h2>
+                <span class="close" onclick="closeEditTemplateModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Template Name *</label>
+                    <input type="text" id="edit-template-name" placeholder="e.g., SEO Proposal, PPC Proposal" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="edit-template-description" rows="3" placeholder="Template description..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-danger" onclick="deleteCurrentTemplate()" style="margin-right: auto;">
+                        <i class="fas fa-trash"></i> Delete Template
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeEditTemplateModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="updateTemplate()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Client Modal -->
+    <div id="edit-client-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-edit"></i> Edit Client</h2>
+                <span class="close" onclick="closeEditClientModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Client Name *</label>
+                    <input type="text" id="edit-client-name" placeholder="Enter client name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="edit-client-email" placeholder="client@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="edit-client-phone" placeholder="+1 (555) 000-0000">
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="edit-client-notes" rows="3" placeholder="Additional notes..."></textarea>
+                </div>
+                
+                <div class="import-default-section">
+                    <div class="import-default-card">
+                        <i class="fas fa-file-alt"></i>
+                        <div class="import-default-info">
+                            <h3>Use Template</h3>
+                            <p><strong>Warning:</strong> This will replace all existing screens for this client with screens from the selected template.</p>
+                        </div>
+                        <select id="template-select" class="form-control" style="margin-bottom: 10px;">
+                            <option value="">Select a template...</option>
+                        </select>
+                        <button class="btn btn-primary btn-block" onclick="applyTemplateToClient()" id="apply-template-btn">
+                            <i class="fas fa-magic"></i> Apply Template
+                        </button>
+                    </div>
+                    <div class="import-default-card" style="margin-top: 15px;">
+                        <i class="fas fa-copy"></i>
+                        <div class="import-default-info">
+                            <h3>Import ALL Screens from Library</h3>
+                            <p><strong>Warning:</strong> This will replace all existing screens for this client with screens from the library.</p>
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="importDefaultScreensForExistingClient()" id="edit-import-default-btn">
+                            <i class="fas fa-download"></i> Import Screens
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn btn-danger" onclick="deleteCurrentClient()" style="margin-right: auto;">
+                        <i class="fas fa-trash"></i> Delete Client
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeEditClientModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="updateClient()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- CodeMirror for HTML editing -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

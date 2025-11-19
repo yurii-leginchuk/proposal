@@ -1,0 +1,9 @@
+node_modules/
+.env
+uploads/
+generated/
+*.log
+.DS_Store
+backups/
+mongodb-dump/
+

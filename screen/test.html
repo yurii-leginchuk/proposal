@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <title>Демонстрація списків, інлайнів і форм</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; line-height:1.5; color:#111; background:#fafafa; margin:0; padding:24px;">
+
+<header style="margin-bottom:24px; padding:16px; background:#fff; border:1px solid #e5e7eb; border-radius:12px;">
+    <h1 style="margin:0 0 8px; font-size:28px;">Демо: списки, інлайнові елементи, селекти та інпути</h1>
+    <p style="margin:0; color:#475569;">
+        Це невеликий стенд із базовими елементами HTML. Увесь стиль задано <strong style="font-weight:700;">інлайново</strong>.
+    </p>
+</header>
+
+
+
+<!-- Звичайне зображення -->
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVQYV2NkYGD4z0AEYBxVSFUAAgAAXrkH7Ps1XgAAAABJRU5ErkJggg==" alt="Red dot">
+
+<br>
+<br>
+<br>
+<br>
+
+<!-- Зображення з width/height -->
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAIElEQVQoz2NgGAWjgHgAEZgBk4AIYgAwgJgAJiQDwBgAALycCucGOV14AAAAASUVORK5CYII=" width="64" height="64" alt="Blue square">
+
+
+<!-- Блок зі строковими (inline) елементами -->
+<section style="margin-bottom:24px; padding:16px; background:#fff; border:1px solid #e5e7eb; border-radius:12px;">
+    <h2 style="margin:0 0 12px; font-size:22px;">Строкові елементи (inline)</h2>
+    <p style="margin:0 0 8px;">
+        <em style="font-style:italic;">Emphasis</em>,
+        <strong style="font-weight:700;">Strong</strong>,
+        <mark style="background:#fde68a;">mark</mark>,
+        <code style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; background:#f3f4f6; padding:2px 6px; border-radius:6px;">const x = 42;</code>,
+        <kbd style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; background:#e5e7eb; padding:2px 6px; border-radius:6px;">Ctrl</kbd>+<kbd style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; background:#e5e7eb; padding:2px 6px; border-radius:6px;">S</kbd>,
+        <abbr title="Search Engine Optimization" style="text-decoration:underline dotted;">SEO</abbr>,
+        <small style="font-size:85%;">small</small>,
+        <sup style="font-size:75%; vertical-align:super;">2</sup>,
+        <sub style="font-size:75%; vertical-align:sub;">n</sub>,
+        <time datetime="2025-11-06" style="border-bottom:1px dotted #94a3b8;">06.11.2025</time>,
+        <bdi style="unicode-bidi:isolate;">עִבְרִית</bdi>,
+        <bdo dir="rtl" style="unicode-bidi:bidi-override;">rtl приклад</bdo>,
+        <span style="background:#eef2ff; padding:0 6px; border-radius:6px;">span</span>,
+        <a href="#" style="color:#2563eb; text-decoration:none; border-bottom:1px solid #93c5fd;">посилання</a>.
+    </p>
+    <p style="margin:0;">
+        Також можна вставляти <u style="text-underline-offset:3px;">підкреслення</u>, <s style="text-decoration-thickness:2px;">закреслення</s> і
+        <i style="font-style:italic;">курсив</i> — усе це inline.
+    </p>
+</section>
+
+<!-- Списки: ul/ol з вкладенням, а також dl -->
+<section style="margin-bottom:24px; padding:16px; background:#fff; border:1px solid #e5e7eb; border-radius:12px;">
+    <h2 style="margin:0 0 12px; font-size:22px;">Списки (в т.ч. вкладені)</h2>
+
+    <div style="display:flex; gap:24px; flex-wrap:wrap;">
+        <div style="flex:1 1 320px;">
+            <h3 style="margin:0 0 8px; font-size:18px;">Маркірований список (ul)</h3>
+            <ul style="margin:0 0 12px 20px;">
+                <li style="margin-bottom:6px;">Пункт A
+                    <ul style="margin:6px 0 6px 20px;">
+                        <li>Підпункт A.1</li>
+                        <li>Підпункт A.2
+                            <ul style="margin:6px 0 6px 20px;">
+                                <li>Рівень 3 — A.2.i</li>
+                                <li>Рівень 3 — A.2.ii</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li style="margin-bottom:6px;">Пункт B</li>
+                <li>Пункт C</li>
+            </ul>
+        </div>
+
+        <div style="flex:1 1 320px;">
+            <h3 style="margin:0 0 8px; font-size:18px;">Нумерований список (ol)</h3>
+            <ol style="margin:0 0 12px 20px;">
+                <li style="margin-bottom:6px;">Крок 1</li>
+                <li style="margin-bottom:6px;">Крок 2
+                    <ol style="margin:6px 0 6px 20px;" type="a">
+                        <li>Підкрок 2.a</li>
+                        <li>Підкрок 2.b</li>
+                    </ol>
+                </li>
+                <li>Крок 3</li>
+            </ol>
+        </div>
+
+        <div style="flex:1 1 320px;">
+            <h3 style="margin:0 0 8px; font-size:18px;">Список термінів (dl)</h3>
+            <dl style="margin:0;">
+                <dt style="font-weight:600;">API</dt>
+                <dd style="margin:0 0 8px 16px; color:#475569;">Інтерфейс взаємодії застосунків</dd>
+
+                <dt style="font-weight:600;">CDN</dt>
+                <dd style="margin:0 0 8px 16px; color:#475569;">Мережа доставки контенту</dd>
+
+                <dt style="font-weight:600;">HTTP</dt>
+                <dd style="margin:0 0 8px 16px; color:#475569;">Протокол передачі гіпертексту</dd>
+            </dl>
+        </div>
+    </div>
+</section>
+
+<!-- Форма з текстовими/числовими інпутами і селектами -->
+<section style="margin-bottom:24px; padding:16px; background:#fff; border:1px solid #e5e7eb; border-radius:12px;">
+    <h2 style="margin:0 0 12px; font-size:22px;">Форма: текстові, числові інпути та селекти</h2>
+
+    <form action="#" method="get" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            <label for="name" style="font-weight:600;">Ім’я (text)</label>
+            <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Введіть ім’я"
+                    style="padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; outline:none;"
+            >
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            <label for="email" style="font-weight:600;">Email (text)</label>
+            <input
+                    id="email"
+                    name="email"
+                    type="text"
+                    inputmode="email"
+                    placeholder="name@example.com"
+                    style="padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; outline:none;"
+            >
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            <label for="age" style="font-weight:600;">Вік (number)</label>
+            <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="0"
+                    max="120"
+                    step="1"
+                    placeholder="18"
+                    style="padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; outline:none; -moz-appearance:textfield;"
+            >
+            <span style="color:#64748b; font-size:14px;">Діапазон 0–120, крок 1.</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            <label for="country" style="font-weight:600;">Країна (select)</label>
+            <select
+                    id="country"
+                    name="country"
+                    style="padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; outline:none;"
+            >
+                <option value="">— Оберіть країну —</option>
+                <option value="ua">Україна</option>
+                <option value="pl">Польща</option>
+                <option value="de">Німеччина</option>
+                <option value="us">США</option>
+            </select>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            <label for="skills" style="font-weight:600;">Навички (multiple select)</label>
+            <select
+                    id="skills"
+                    name="skills"
+                    multiple
+                    size="4"
+                    style="padding:8px 10px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; outline:none;"
+            >
+                <option>HTML</option>
+                <option>CSS</option>
+                <option>JavaScript</option>
+                <option>React</option>
+                <option>Node.js</option>
+                <option>Python</option>
+            </select>
+            <span style="color:#64748b; font-size:14px;">Утримуйте Ctrl/⌘ для вибору кількох.</span>
+        </div>
+
+        <div style="display:flex; align-items:flex-end; gap:8px;">
+            <button type="submit" style="padding:10px 16px; border:1px solid #2563eb; border-radius:10px; background:#2563eb; color:#fff; cursor:pointer;">Надіслати</button>
+            <button type="reset"  style="padding:10px 16px; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; color:#334155; cursor:pointer;">Очистити</button>
+        </div>
+    </form>
+</section>
+
+<!-- Приклад вкладення списків один у одного у вмісті картки -->
+<section style="padding:16px; background:#fff; border:1px solid #e5e7eb; border-radius:12px;">
+    <h2 style="margin:0 0 12px; font-size:22px;">Вкладені списки всередині пунктів</h2>
+    <ul style="margin:0 0 0 20px;">
+        <li style="margin-bottom:6px;">
+            <span style="font-weight:600;">Пакет “Старт”</span>
+            <ol style="margin:6px 0 6px 20px;">
+                <li>Аналіз сайту</li>
+                <li>Налаштування метрик
+                    <ul style="margin:6px 0 6px 20px;">
+                        <li>GTM</li>
+                        <li>GSC</li>
+                        <li>GA4</li>
+                    </ul>
+                </li>
+            </ol>
+        </li>
+        <li style="margin-bottom:6px;">
+            <span style="font-weight:600;">Пакет “Про”</span>
+            <ol style="margin:6px 0 6px 20px;">
+                <li>Оптимізація CWV</li>
+                <li>CI для Lighthouse</li>
+                <li>Звітність (dl):
+                    <dl style="margin:6px 0 0 16px;">
+                        <dt style="font-weight:600;">Щотижня</dt>
+                        <dd style="margin:0 0 6px 16px;">Огляд змін</dd>
+                        <dt style="font-weight:600;">Щомісяця</dt>
+                        <dd style="margin:0 0 0 16px;">Підсумковий звіт</dd>
+                    </dl>
+                </li>
+            </ol>
+        </li>
+    </ul>
+</section>
+
+<footer style="margin-top:24px; text-align:center; color:#64748b;">
+    Зроблено для швидкої перевірки верстки елементів.
+</footer>
+</body>
+</html>

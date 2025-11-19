@@ -1,0 +1,102 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: proposal-builder-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-adminpassword}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-proposal-builder}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./mongodb-dump:/mongodb-dump
+    # Port not exposed to host - MongoDB is only accessible within Docker network
+    # Uncomment the line below if you need external access to MongoDB
+    ports:
+       - "27017:27017"
+    networks:
+      - proposal-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-init:
+    image: mongo:7
+    container_name: proposal-builder-mongo-init
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-adminpassword}
+      MONGO_DATABASE: ${MONGO_DATABASE:-proposal-builder}
+    volumes:
+      - ./mongodb-dump:/mongodb-dump
+      - ./scripts/init-mongo.sh:/init-mongo.sh
+    command: sh -c "chmod +x /init-mongo.sh && /init-mongo.sh"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - proposal-network
+    restart: "no"
+
+  app:
+    build: .
+    container_name: proposal-builder-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-adminpassword}@mongodb:27017/${MONGO_DATABASE:-proposal-builder}?authSource=admin
+    volumes:
+      - ./uploads:/app/uploads
+      - ./generated:/app/generated
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - proposal-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: proposal-builder-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    networks:
+      - proposal-network
+
+  backup:
+    image: mongo:7
+    container_name: proposal-builder-backup
+    restart: unless-stopped
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_DATABASE: ${MONGO_DATABASE:-proposal-builder}
+      MONGO_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_PASSWORD: ${MONGO_ROOT_PASSWORD:-adminpassword}
+      BACKUP_INTERVAL: ${BACKUP_INTERVAL:-3600}
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh
+    command: sh -c "chmod +x /backup.sh && sh /backup.sh"
+    depends_on:
+      - mongodb
+    networks:
+      - proposal-network
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+
+networks:
+  proposal-network:
+    driver: bridge
+
