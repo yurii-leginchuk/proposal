@@ -509,9 +509,19 @@ function createScreenItem(screen) {
     const previewHtml = screen.editedHtml || screen.originalHtml || '';
     const previewId = `preview-${screen._id}`;
     
+    // Create tags display
+    const tagsDisplay = screen.tags && screen.tags.length > 0 
+        ? `<div class="screen-tags">
+            ${screen.tags.map(tag => `<span class="tag-badge" title="Tag: ${escapeHtml(tag)}"><i class="fas fa-tag" style="font-size: 9px; margin-right: 4px; opacity: 0.7;"></i>${escapeHtml(tag)}</span>`).join('')}
+           </div>`
+        : '';
+    
     li.innerHTML = `
         <div class="screen-header">
-            <span onclick="selectScreen('${screen._id}')">${screen.name}</span>
+            <div style="flex: 1;">
+                <span onclick="selectScreen('${screen._id}')">${screen.name}</span>
+                ${tagsDisplay}
+            </div>
             <div class="actions">
                 <button onclick="duplicateScreen('${screen._id}')" title="Duplicate">
                     <i class="fas fa-copy"></i>
@@ -4825,6 +4835,11 @@ async function duplicateScreen(screenId) {
     }
 }
 
+function previewScreenInNewWindow(screenId) {
+    const previewUrl = `/api/screens/${screenId}/preview`;
+    window.open(previewUrl, '_blank', 'width=1440,height=1024,scrollbars=yes,resizable=yes');
+}
+
 async function deleteScreen(screenId) {
     if (!confirm('Are you sure you want to delete this screen?')) return;
 
@@ -4961,6 +4976,10 @@ async function showScreenModal(screenId = null) {
     const defaultScreensTabBtn = document.getElementById('default-screens-tab-btn');
     const defaultScreensTab = document.getElementById('import-default-tab');
     
+    const tagsInput = document.getElementById('screen-modal-tags');
+    const tagsGroup = document.getElementById('screen-tags-group');
+    const tagsList = document.getElementById('tags-list');
+    
     if (screenId) {
         // Edit mode
         title.innerHTML = '<i class="fas fa-edit"></i> Edit Screen';
@@ -4968,15 +4987,25 @@ async function showScreenModal(screenId = null) {
         if (screen) {
             nameInput.value = screen.name;
             htmlTextarea.value = screen.editedHtml || screen.originalHtml || '';
+            if (tagsList && screen.tags && Array.isArray(screen.tags)) {
+                renderTags(screen.tags);
+            } else if (tagsList) {
+                tagsList.innerHTML = '';
+            }
         }
         if (defaultScreensTabBtn) {
             defaultScreensTabBtn.style.display = 'none';
+        }
+        if (tagsGroup) {
+            tagsGroup.style.display = 'block';
         }
     } else {
         // Create mode
         title.innerHTML = '<i class="fas fa-plus"></i> Add Screen';
         nameInput.value = '';
         htmlTextarea.value = '';
+        if (tagsList) tagsList.innerHTML = '';
+        if (tagsInput) tagsInput.value = '';
         
         // Показать вкладку "Select from Library" только если добавляем экран к клиенту или шаблону
         // В библиотеке эта вкладка не нужна
@@ -4986,6 +5015,17 @@ async function showScreenModal(screenId = null) {
             } else {
                 defaultScreensTabBtn.style.display = 'none';
             }
+        }
+    }
+    
+    // Initialize tags input handler (remove old listeners first)
+    if (tagsInput) {
+        const newInput = tagsInput.cloneNode(true);
+        tagsInput.parentNode.replaceChild(newInput, tagsInput);
+        const freshInput = document.getElementById('screen-modal-tags');
+        if (freshInput) {
+            freshInput.addEventListener('keydown', handleTagsInputKeydown);
+            freshInput.addEventListener('blur', handleTagsInputBlur);
         }
     }
     
@@ -5019,11 +5059,19 @@ function closeScreenModal() {
     document.getElementById('screen-modal-name').value = '';
     document.getElementById('screen-modal-file').value = '';
     document.getElementById('screen-modal-html').value = '';
+    const tagsInput = document.getElementById('screen-modal-tags');
+    const tagsList = document.getElementById('tags-list');
+    if (tagsInput) tagsInput.value = '';
+    if (tagsList) tagsList.innerHTML = '';
     
     // Очистити вибрані checkbox дефолтних екранів
     document.querySelectorAll('.default-screen-checkbox').forEach(cb => {
         cb.checked = false;
     });
+    
+    // Сбросить фильтр тегов
+    const tagFilter = document.getElementById('screen-tag-filter');
+    if (tagFilter) tagFilter.value = '';
     
     // Скинути вкладку в зависимости от контекста
     if (currentClient || currentTemplate) {
@@ -5035,6 +5083,92 @@ function closeScreenModal() {
     }
 }
 
+// Tags input handlers
+function handleTagsInputKeydown(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addTagFromInput();
+    } else if (e.key === 'Backspace' && e.target.value === '') {
+        // Remove last tag if input is empty
+        const tagsList = document.getElementById('tags-list');
+        const lastTag = tagsList?.lastElementChild;
+        if (lastTag) {
+            lastTag.remove();
+        }
+    }
+}
+
+function handleTagsInputBlur(e) {
+    // Add tag when input loses focus if there's text
+    if (e.target.value.trim()) {
+        addTagFromInput();
+    }
+}
+
+function addTagFromInput() {
+    const tagsInput = document.getElementById('screen-modal-tags');
+    const tagsList = document.getElementById('tags-list');
+    if (!tagsInput || !tagsList) return;
+    
+    const tagValue = tagsInput.value.trim();
+    if (tagValue) {
+        const existingTags = getCurrentTags();
+        if (!existingTags.includes(tagValue)) {
+            addTagToDisplay(tagValue);
+            tagsInput.value = '';
+        } else {
+            tagsInput.value = '';
+        }
+    }
+}
+
+function addTagToDisplay(tagValue) {
+    const tagsList = document.getElementById('tags-list');
+    if (!tagsList) return;
+    
+    const tagItem = document.createElement('div');
+    tagItem.className = 'tag-item';
+    tagItem.innerHTML = `
+        <i class="fas fa-tag" style="font-size: 10px; opacity: 0.9;"></i>
+        <span>${escapeHtml(tagValue)}</span>
+        <button type="button" class="tag-remove" onclick="removeTag(this)" title="Remove tag">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    tagsList.appendChild(tagItem);
+}
+
+function removeTag(button) {
+    const tagItem = button.closest('.tag-item');
+    if (tagItem) {
+        tagItem.style.animation = 'tagSlideIn 0.2s ease reverse';
+        setTimeout(() => tagItem.remove(), 200);
+    }
+}
+
+function getCurrentTags() {
+    const tagsList = document.getElementById('tags-list');
+    if (!tagsList) return [];
+    
+    return Array.from(tagsList.querySelectorAll('.tag-item span'))
+        .map(span => span.textContent.trim())
+        .filter(tag => tag);
+}
+
+function renderTags(tags) {
+    const tagsList = document.getElementById('tags-list');
+    if (!tagsList) return;
+    
+    tagsList.innerHTML = '';
+    if (tags && Array.isArray(tags)) {
+        tags.forEach(tag => {
+            if (tag && tag.trim()) {
+                addTagToDisplay(tag.trim());
+            }
+        });
+    }
+}
+
 function switchImportTab(tab) {
     // Убираем активность со всех вкладок и контента
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -5043,6 +5177,7 @@ function switchImportTab(tab) {
     const nameInput = document.getElementById('screen-modal-name');
     const nameRequired = document.getElementById('screen-name-required');
     const nameGroup = document.getElementById('screen-name-group');
+    const tagsGroup = document.getElementById('screen-tags-group');
     
     if (tab === 'default') {
         const defaultTabBtn = document.getElementById('default-screens-tab-btn');
@@ -5054,6 +5189,7 @@ function switchImportTab(tab) {
             if (nameInput) nameInput.required = false;
             if (nameRequired) nameRequired.style.display = 'none';
             if (nameGroup) nameGroup.style.display = 'none';
+            if (tagsGroup) tagsGroup.style.display = 'none';
         }
     } else if (tab === 'file') {
         const fileTabBtn = document.querySelector('.tab-btn[onclick*="switchImportTab(\'file\')"]');
@@ -5064,6 +5200,7 @@ function switchImportTab(tab) {
             if (nameInput) nameInput.required = true;
             if (nameRequired) nameRequired.style.display = 'inline';
             if (nameGroup) nameGroup.style.display = 'block';
+            if (tagsGroup) tagsGroup.style.display = 'block';
         }
     } else if (tab === 'text') {
         const textTabBtn = document.querySelector('.tab-btn[onclick*="switchImportTab(\'text\')"]');
@@ -5074,6 +5211,7 @@ function switchImportTab(tab) {
             if (nameInput) nameInput.required = true;
             if (nameRequired) nameRequired.style.display = 'inline';
             if (nameGroup) nameGroup.style.display = 'block';
+            if (tagsGroup) tagsGroup.style.display = 'block';
         }
     }
 }
@@ -5092,6 +5230,7 @@ function handleFileSelect(event) {
 
 // Завантажити список дефолтних екранів
 let defaultScreensList = [];
+let allDefaultScreensList = []; // Полный список для фильтрации
 async function loadDefaultScreensList() {
     const listContainer = document.getElementById('default-screens-list');
     const loadingState = document.getElementById('default-screens-loading');
@@ -5109,14 +5248,41 @@ async function loadDefaultScreensList() {
         listContainer.innerHTML = '';
         
         showLoader();
-        const response = await fetch('/api/screens?isDefault=true');
+        
+        // Загрузить теги для фильтра
+        await loadTagsForFilter();
+        
+        // Получить выбранный тег для фильтрации
+        const tagFilter = document.getElementById('screen-tag-filter');
+        const selectedTag = tagFilter ? tagFilter.value : '';
+        
+        let url = '/api/screens?isDefault=true';
+        if (selectedTag) {
+            url += `&tags=${encodeURIComponent(selectedTag)}`;
+        }
+        
+        const response = await fetch(url);
         defaultScreensList = await response.json();
         
+        // Сохранить полный список для фильтрации
+        if (!selectedTag) {
+            allDefaultScreensList = defaultScreensList;
+        }
+        
+        // Если фильтр активен, но нет результатов, загрузить все для отображения
+        if (defaultScreensList.length === 0 && selectedTag) {
+            const allResponse = await fetch('/api/screens?isDefault=true');
+            allDefaultScreensList = await allResponse.json();
+        } else if (!selectedTag) {
+            allDefaultScreensList = defaultScreensList;
+        }
+        
         if (defaultScreensList.length === 0) {
-            listContainer.innerHTML = '<div class="empty-state"><p>No default screens available</p></div>';
+            listContainer.innerHTML = '<div class="empty-state"><p>No screens found with selected tag</p></div>';
             if (loadingState) {
                 loadingState.style.display = 'none';
             }
+            hideLoader();
             return;
         }
         
@@ -5128,15 +5294,27 @@ async function loadDefaultScreensList() {
             const previewId = `default-preview-${screen._id}`;
             const previewHtml = screen.editedHtml || screen.originalHtml || '';
             
+            const tagsDisplay = screen.tags && screen.tags.length > 0 
+                ? `<div class="screen-tags">
+                    ${screen.tags.map(tag => `<span class="tag-badge" title="Tag: ${escapeHtml(tag)}"><i class="fas fa-tag" style="font-size: 9px; margin-right: 4px; opacity: 0.7;"></i>${escapeHtml(tag)}</span>`).join('')}
+                   </div>`
+                : '';
+            
             itemDiv.innerHTML = `
+                <div class="default-screen-item-head">
                 <label class="checkbox-label">
                     <input type="checkbox" class="default-screen-checkbox" value="${screen._id}" data-screen-name="${screen.name}">
                     <span class="checkbox-text">${screen.name}</span>
                 </label>
+                ${tagsDisplay}
+                </div>
                 <div class="default-screen-preview-wrapper">
                     <div class="duplicate-overlay">
                         <button class="duplicate-btn" onclick="event.stopPropagation(); duplicateScreen('${screen._id}')" title="Duplicate screen">
                             <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="preview-btn" onclick="event.stopPropagation(); previewScreenInNewWindow('${screen._id}')" title="Preview screen in new window">
+                            <i class="fas fa-external-link-alt"></i>
                         </button>
                     </div>
                     <iframe id="${previewId}" class="default-screen-preview-iframe" frameborder="0" scrolling="no"></iframe>
@@ -5249,6 +5427,46 @@ async function loadDefaultScreensList() {
     }
 }
 
+// Загрузить теги для фильтра
+async function loadTagsForFilter() {
+    try {
+        const response = await fetch('/api/screens/tags/all');
+        const tags = await response.json();
+        const tagFilter = document.getElementById('screen-tag-filter');
+        if (tagFilter) {
+            // Сохранить текущее значение
+            const currentValue = tagFilter.value;
+            // Очистить и заполнить заново
+            tagFilter.innerHTML = '<option value="">All Tags</option>';
+            tags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag;
+                option.textContent = tag;
+                tagFilter.appendChild(option);
+            });
+            // Восстановить значение
+            tagFilter.value = currentValue;
+        }
+    } catch (error) {
+        console.error('Error loading tags:', error);
+    }
+}
+
+// Фильтровать экраны по тегу
+async function filterScreensByTag() {
+    await loadDefaultScreensList();
+}
+
+// Выбрать все экраны
+function selectAllScreens() {
+    const checkboxes = document.querySelectorAll('.default-screen-checkbox:not([style*="display: none"])');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+    });
+}
+
 async function saveScreenFromModal() {
     const name = document.getElementById('screen-modal-name').value;
     const htmlText = document.getElementById('screen-modal-html').value;
@@ -5324,6 +5542,9 @@ async function saveScreenFromModal() {
         let response;
         
         if (editingScreenId) {
+            // Get tags from display
+            const tags = getCurrentTags();
+            
             // Update existing screen
             response = await fetch(`/api/screens/${editingScreenId}`, {
                 method: 'PUT',
@@ -5332,6 +5553,7 @@ async function saveScreenFromModal() {
                 },
                 body: JSON.stringify({
                     name: name,
+                    tags: tags,
                 }),
             });
             
@@ -5355,6 +5577,9 @@ async function saveScreenFromModal() {
                 }
             }
         } else {
+            // Get tags from display
+            const tags = getCurrentTags();
+            
             // Create new screen
             if (fileInput.files[0]) {
                 const formData = new FormData();
@@ -5366,6 +5591,9 @@ async function saveScreenFromModal() {
                 }
                 if (currentTemplate) {
                     formData.append('templateId', currentTemplate);
+                }
+                if (tags.length > 0) {
+                    formData.append('tags', tags.join(','));
                 }
                 
                 response = await fetch('/api/screens/import', {
@@ -5384,6 +5612,7 @@ async function saveScreenFromModal() {
                         isDefault: !currentClient && !currentTemplate,
                         clientId: currentClient || null,
                         templateId: currentTemplate || null,
+                        tags: tags,
                     }),
                 });
             }

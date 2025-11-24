@@ -26,10 +26,10 @@ const ensureUploadsDir = async () => {
 
 ensureUploadsDir();
 
-// Отримати всі екрани (з фільтрацією по clientId, templateId або isDefault)
+// Отримати всі екрани (з фільтрацією по clientId, templateId, isDefault або tags)
 router.get('/', async (req, res) => {
   try {
-    const { clientId, templateId, isDefault } = req.query;
+    const { clientId, templateId, isDefault, tags } = req.query;
     const query = {};
     
     if (templateId) {
@@ -43,6 +43,12 @@ router.get('/', async (req, res) => {
     } else {
       // Якщо немає параметрів, повертаємо дефолтні
       query.isDefault = true;
+    }
+    
+    // Фільтрація по тегам
+    if (tags) {
+      const tagArray = Array.isArray(tags) ? tags : [tags];
+      query.tags = { $in: tagArray };
     }
     
     const screens = await Screen.find(query).sort({ order: 1 });
@@ -65,6 +71,21 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Прев'ю екрана (повертає HTML)
+router.get('/:id/preview', async (req, res) => {
+  try {
+    const screen = await Screen.findById(req.params.id);
+    if (!screen) {
+      return res.status(404).send('<html><body><h1>Screen not found</h1></body></html>');
+    }
+    const html = screen.editedHtml || screen.originalHtml || '';
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (error) {
+    res.status(500).send(`<html><body><h1>Error loading screen</h1><p>${error.message}</p></body></html>`);
+  }
+});
+
 // Імпортувати HTML екран
 router.post('/import', upload.single('htmlFile'), async (req, res) => {
   try {
@@ -83,6 +104,27 @@ router.post('/import', upload.single('htmlFile'), async (req, res) => {
     const { name, isDefault, clientId, templateId } = req.body;
     const screenName = name && name.trim() ? name.trim() : fileName;
     
+    // Parse tags from request body (FormData sends as string)
+    let tags = [];
+    if (req.body.tags) {
+      if (typeof req.body.tags === 'string') {
+        // Try to parse as JSON first (if sent as JSON string)
+        try {
+          const parsed = JSON.parse(req.body.tags);
+          if (Array.isArray(parsed)) {
+            tags = parsed.map(t => String(t).trim()).filter(t => t);
+          } else {
+            tags = req.body.tags.split(',').map(t => t.trim()).filter(t => t);
+          }
+        } catch (e) {
+          // If not JSON, treat as comma-separated string
+          tags = req.body.tags.split(',').map(t => t.trim()).filter(t => t);
+        }
+      } else if (Array.isArray(req.body.tags)) {
+        tags = req.body.tags.map(t => String(t).trim()).filter(t => t);
+      }
+    }
+    
     const screen = new Screen({
       name: screenName,
       originalHtml: htmlContent,
@@ -91,6 +133,7 @@ router.post('/import', upload.single('htmlFile'), async (req, res) => {
       isDefault: isDefault === 'true' || isDefault === true,
       clientId: clientId && clientId !== 'null' ? clientId : null,
       templateId: templateId && templateId !== 'null' ? templateId : null,
+      tags: tags,
     });
 
     await screen.save();
@@ -103,10 +146,20 @@ router.post('/import', upload.single('htmlFile'), async (req, res) => {
 // Імпортувати HTML через текст
 router.post('/import-text', async (req, res) => {
   try {
-    const { name, html, isDefault, clientId, templateId } = req.body;
+    const { name, html, isDefault, clientId, templateId, tags } = req.body;
     
     if (!html) {
       return res.status(400).json({ error: 'HTML content is required' });
+    }
+
+    // Parse tags
+    let parsedTags = [];
+    if (tags) {
+      if (typeof tags === 'string') {
+        parsedTags = tags.split(',').map(t => t.trim()).filter(t => t);
+      } else if (Array.isArray(tags)) {
+        parsedTags = tags.map(t => String(t).trim()).filter(t => t);
+      }
     }
 
     const screen = new Screen({
@@ -117,6 +170,7 @@ router.post('/import-text', async (req, res) => {
       isDefault: isDefault === 'true' || isDefault === true,
       clientId: clientId && clientId !== 'null' ? clientId : null,
       templateId: templateId && templateId !== 'null' ? templateId : null,
+      tags: parsedTags,
     });
 
     await screen.save();
@@ -192,13 +246,14 @@ router.put('/reorder', async (req, res) => {
   }
 });
 
-// Оновити екран (назва)
+// Оновити екран (назва, теги)
 router.put('/:id', async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, tags } = req.body;
     const update = {};
     
     if (name !== undefined) update.name = name;
+    if (tags !== undefined) update.tags = Array.isArray(tags) ? tags : [];
 
     const screen = await Screen.findByIdAndUpdate(
       req.params.id,
@@ -234,6 +289,7 @@ router.post('/:id/duplicate', async (req, res) => {
       order: originalScreen.order,
       isDefault: originalScreen.isDefault,
       clientId: originalScreen.clientId,
+      tags: originalScreen.tags && Array.isArray(originalScreen.tags) ? [...originalScreen.tags] : [],
     });
 
     await duplicatedScreen.save();
@@ -253,6 +309,28 @@ router.delete('/:id', async (req, res) => {
     }
 
     res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Отримати всі унікальні теги
+router.get('/tags/all', async (req, res) => {
+  try {
+    const screens = await Screen.find({ isDefault: true });
+    const allTags = new Set();
+    
+    screens.forEach(screen => {
+      if (screen.tags && Array.isArray(screen.tags)) {
+        screen.tags.forEach(tag => {
+          if (tag && tag.trim()) {
+            allTags.add(tag.trim());
+          }
+        });
+      }
+    });
+    
+    res.json(Array.from(allTags).sort());
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

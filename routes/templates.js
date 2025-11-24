@@ -131,6 +131,7 @@ router.post('/:id/copy-screens', async (req, res) => {
         isDefault: false,
         clientId: null,
         templateId: template._id,
+        tags: sourceScreen.tags && Array.isArray(sourceScreen.tags) ? [...sourceScreen.tags] : [],
       });
       await newScreen.save();
       copiedScreens.push(newScreen);
@@ -170,6 +171,7 @@ router.post('/:id/apply-to-client/:clientId', async (req, res) => {
         isDefault: false,
         clientId: clientId,
         templateId: null,
+        tags: templateScreen.tags && Array.isArray(templateScreen.tags) ? [...templateScreen.tags] : [],
       });
       await newScreen.save();
       appliedScreens.push(newScreen);

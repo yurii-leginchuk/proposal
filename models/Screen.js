@@ -25,6 +25,10 @@ const ScreenSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  tags: {
+    type: [String],
+    default: [],
+  },
   clientId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Client',

@@ -354,15 +354,21 @@ header {
 .screen-item .screen-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 10px;
+    gap: 10px;
+}
+
+.screen-item .screen-header > div {
+    flex: 1;
+    min-width: 0;
 }
 
 .screen-item .screen-header span {
     cursor: pointer;
     font-weight: 600;
-    flex: 1;
     font-size: 14px;
+    display: block;
 }
 
 .screen-item .screen-header span:hover {
@@ -416,6 +422,7 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 12px;
     background: rgba(0, 0, 0, 0);
     opacity: 0;
     transition: all 0.2s ease;
@@ -454,6 +461,33 @@ header {
 }
 
 .duplicate-btn:active {
+    transform: scale(0.95);
+}
+
+.preview-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-size: 18px;
+    z-index: 11;
+}
+
+.preview-btn:hover {
+    background: var(--primary-dark);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.preview-btn:active {
     transform: scale(0.95);
 }
 
@@ -2207,4 +2241,256 @@ textarea.html-field-input {
 
 .sidebar-header {
     height: 103px;
+}
+
+/* Tags Input Component */
+.tags-input-container {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    background: var(--bg-primary);
+    min-height: 48px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    transition: all 0.2s ease;
+    cursor: text;
+}
+
+.tags-input-container:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 6px 12px 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    animation: tagSlideIn 0.3s ease;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.tag-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.tag-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+}
+
+@keyframes tagSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.tag-item .tag-remove {
+    background: rgba(255, 255, 255, 0.25);
+    border: none;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    line-height: 1;
+    margin-left: 2px;
+}
+
+.tag-item .tag-remove:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.15) rotate(90deg);
+}
+
+.tags-input {
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 150px;
+    padding: 6px 4px;
+    font-size: 14px;
+    background: transparent;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.tags-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Tag Badge Display (in lists) */
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%);
+    color: var(--primary-color);
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+    margin-top: 6px;
+    margin-bottom: 2px;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(99, 102, 241, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.tag-badge::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: var(--primary-color);
+    opacity: 0.5;
+}
+
+.tag-badge:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(139, 92, 246, 0.18) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.35);
+}
+
+.screen-tags {
+    margin-top: 6px;
+    margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.screen-tags::before {
+    display: none;
+}
+
+/* Tags in screen list (sidebar) */
+.screen-item .screen-tags {
+    margin-top: 4px;
+    gap: 8px;
+}
+
+.screen-item .screen-tags .tag-badge {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    box-shadow: none;
+}
+
+.screen-item .screen-tags .tag-badge::before {
+    display: none;
+}
+
+.screen-item .screen-tags .tag-badge:hover {
+    transform: none;
+    box-shadow: none;
+    color: var(--primary-color);
+}
+
+.screen-item .screen-tags .tag-badge i {
+    font-size: 10px;
+    margin-right: 3px;
+    opacity: 0.6;
+}
+
+.default-screen-item-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.default-screen-item-head  .checkbox-label {
+    margin: 0;
+    padding: 0;
+}
+
+.screen-tags::before {
+    display: none;
+}
+
+.tag-badge {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none; 
+    border-radius: 0;
+    font-size: 14px;
+}
+
+.screen-tags {
+    margin: 0;
+    display: flex;
+    gap: 5px;
+}
+
+#import-default-tab .duplicate-btn {
+    display: none !important;
+}
+
+.tag-badge::before {
+    display: none;
+}
+
+.screen-item .screen-tags .tag-badge {
+    font-size: 14px;
+}
+
+.tag-badge {
+    pointer-events: none !important;
+}
+
+
+.screen-item .screen-header > div {
+    justify-content: flex-end;
+}
+
+.screen-item .screen-tags .tag-badge {
+    color: var(--text-primary) !important;
 }

@@ -179,6 +179,14 @@
                     <label>Screen Name <span id="screen-name-required">*</span></label>
                     <input type="text" id="screen-modal-name" placeholder="Enter screen name" required>
                 </div>
+                <div class="form-group" id="screen-tags-group">
+                    <label>Tags</label>
+                    <div class="tags-input-container" id="tags-input-container">
+                        <div class="tags-list" id="tags-list"></div>
+                        <input type="text" id="screen-modal-tags" class="tags-input" placeholder="Type and press Enter to add tag" autocomplete="off">
+                    </div>
+                    <small style="color: #666; font-size: 0.9em; margin-top: 8px; display: block;">Type a tag and press Enter to add it</small>
+                </div>
                 <div class="form-tabs">
                     <button class="tab-btn active" id="default-screens-tab-btn" onclick="switchImportTab('default')">
                         <i class="fas fa-clone"></i> Select from Library
@@ -192,7 +200,18 @@
                 </div>
                 <div id="import-default-tab" class="tab-content active">
                     <div class="form-group">
-                        <label>Select Screens From Library</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <label style="margin: 0;">Select Screens From Library</label>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="selectAllScreens()" style="font-size: 0.9em; padding: 5px 10px;">
+                                <i class="fas fa-check-square"></i> Select All
+                            </button>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label>Filter by Tag</label>
+                            <select id="screen-tag-filter" class="form-control" onchange="filterScreensByTag()">
+                                <option value="">All Tags</option>
+                            </select>
+                        </div>
                         <div id="default-screens-list" class="default-screens-list">
                             <div class="loading-state" id="default-screens-loading">
                                 <i class="fas fa-spinner fa-spin"></i> Loading screens...

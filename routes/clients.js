@@ -84,6 +84,7 @@ router.post('/:id/import-default-screens', async (req, res) => {
         order: defaultScreen.order,
         isDefault: false,
         clientId: client._id,
+        tags: defaultScreen.tags && Array.isArray(defaultScreen.tags) ? [...defaultScreen.tags] : [],
       });
       await newScreen.save();
     }
@@ -174,6 +175,7 @@ router.post('/:id/copy-screens', async (req, res) => {
         order: defaultScreen.order,
         isDefault: false,
         clientId: client._id,
+        tags: defaultScreen.tags && Array.isArray(defaultScreen.tags) ? [...defaultScreen.tags] : [],
       });
       await newScreen.save();
       copiedScreens.push(newScreen);
